@@ -1135,11 +1135,25 @@ def render_marketing():
         # 2. On évite les tailles négatives ou trop petites pour l'affichage
         sizes = sizes.apply(lambda x: x if x > 0 else 0).tolist()
 
+        # Nettoyage manuel strict pour l'onglet Marketing
+        import numpy as np
+
+        # 1. On extrait les données brutes sous forme de liste Python simple
+        try:
+            # On convertit en float, on gère les erreurs, et on transforme en liste
+            raw_sizes = pd.to_numeric(df_camp["chiffre_affaires_genere"], errors='coerce').fillna(0).tolist()
+            # On s'assure qu'il n'y a aucune valeur négative (Plotly l'interdit pour 'size')
+            cleaned_sizes = [max(0, float(x)) for x in raw_sizes]
+        except:
+            # Sécurité si la colonne est totalement vide ou corrompue
+            cleaned_sizes = [0] * len(df_camp)
+
+        # 2. Création du graphique avec la liste nettoyée
         fig_conv = px.scatter(
             df_camp, 
             x="nb_clics", 
             y="nb_conversions",
-            size=sizes,  # On passe la liste nettoyée ici
+            size=cleaned_sizes,  # On passe la liste Python pure
             hover_name="nom_campagne",
             color_discrete_sequence=[COULEURS["primaire"]],
             title="Clics vs Conversions (taille = CA)",
