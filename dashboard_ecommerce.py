@@ -1128,32 +1128,46 @@ def render_marketing():
                                barmode="group",
                                xaxis_tickangle=-30, **layout_bvca)
 
-        # Force la conversion en nombres et extraction hors de l'objet Narwhals
-        import numpy as np
+        # --- SOLUTION DE SECOURS RADICALE ---
+        import plotly.graph_objects as go
+
+        # 1. Extraction manuelle forcée (on sort totalement du monde Pandas/Narwhals)
+        x_data = [float(x) for x in df_camp["nb_clics"].tolist()]
+        y_data = [float(y) for y in df_camp["nb_conversions"].tolist()]
+        names = [str(n) for n in df_camp["nom_campagne"].tolist()]
         
-        # Force l'extraction des données en liste Python pure
-        try:
-            # On convertit en float, on gère les erreurs, et on force en LISTE simple
-            # On utilise list() sur les valeurs pour garantir qu'aucun objet Series ne reste
-            raw_values = pd.to_numeric(df_camp["chiffre_affaires_genere"], errors='coerce').fillna(0).values
-            tailles_finales = [max(0.1, float(v)) for v in raw_values]
-        except Exception:
-            # Sécurité : tailles uniformes si la colonne pose problème
-            tailles_finales = [10] * len(df_camp)
+        # Traitement spécifique pour la taille (size)
+        raw_sizes = df_camp["chiffre_affaires_genere"].tolist()
+        clean_sizes = []
+        for v in raw_sizes:
+            try:
+                val = float(v)
+                clean_sizes.append(max(5, val / 1000)) # On réduit l'échelle pour l'affichage
+            except:
+                clean_sizes.append(5)
 
-        # Création du graphique avec la liste nettoyée
-        fig_conv = px.scatter(
-            df_camp, 
-            x="nb_clics", 
-            y="nb_conversions",
-            size=tailles_finales, # On passe la liste Python pure ici
-            hover_name="nom_campagne",
-            color_discrete_sequence=[COULEURS["primaire"]],
+        # 2. Construction du graphique avec Graph Objects (plus stable que Express ici)
+        fig_conv = go.Figure(data=[go.Scatter(
+            x=x_data,
+            y=y_data,
+            mode='markers',
+            text=names,
+            marker=dict(
+                size=clean_sizes,
+                color=COULEURS["primaire"],
+                sizemode='area',
+                sizeref=2.*max(clean_sizes)/(40.**2), # Ajuste la taille des bulles
+                sizemin=4
+            )
+        )])
+
+        fig_conv.update_layout(
             title="Clics vs Conversions (taille = CA)",
-            labels={"nb_clics": "Clics", "nb_conversions": "Conversions"},
+            xaxis_title="Clics",
+            yaxis_title="Conversions",
+            **TEMPLATE_PLOTLY["layout"]
         )
-        fig_conv.update_layout(**TEMPLATE_PLOTLY["layout"])
-
+        
         # Table campagnes
         tbl = df_camp[["nom_campagne", "type_canal", "budget", "nb_conversions", "roi", "taux_conversion"]].copy()
         tbl.columns = ["Campagne", "Canal", "Budget (FCFA)", "Conversions", "ROI", "Taux conv. (%)"]
