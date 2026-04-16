@@ -1135,9 +1135,15 @@ def render_marketing():
         y_data = [float(y) for y in df_camp["nb_conversions"].tolist()]
         names = [str(n) for n in df_camp["nom_campagne"].tolist()]
         
-        # Traitement spécifique pour la taille (size)
+        # Calcul des tailles des bulles avec sécurité si vide
         raw_sizes = df_camp["chiffre_affaires_genere"].tolist()
-        clean_sizes = []
+        clean_sizes = [max(5, float(v) / 1000) if v else 5 for v in raw_sizes]
+
+        # Calcul de la référence de taille (sizeref) avec sécurité
+        # Si la liste est vide, on met une valeur par défaut (1)
+        max_size = max(clean_sizes) if clean_sizes else 1
+        size_ref = 2. * max_size / (40.**2)
+        
         for v in raw_sizes:
             try:
                 val = float(v)
