@@ -317,15 +317,34 @@ PALETTE_GRAPHE = [
 ]
 
 TEMPLATE_PLOTLY = dict(
-    layout=dict(
-        font=dict(family="'Inter', '-apple-system', 'Segoe UI', sans-serif", color=COULEURS["texte"], size=12),
-        paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(0,0,0,0)",
-        colorway=PALETTE_GRAPHE,
-        xaxis=dict(showgrid=True, gridcolor="#E8ECF0", linecolor="#E8ECF0", showline=False),
-        yaxis=dict(showgrid=True, gridcolor="#E8ECF0", linecolor="#E8ECF0", showline=False),
-        legend=dict(bgcolor="rgba(0,0,0,0)", font=dict(size=11)),
-        margin=dict(l=50, r=30, t=50, b=50),
+    layout = dict(
+    # La police globale reste ici, elle s'applique à tout le texte qui n'est pas surchargé ailleurs
+    font=dict(family="'Inter', '-apple-system', 'Segoe UI', sans-serif", color=COULEURS["texte"], size=12),
+    paper_bgcolor="rgba(0,0,0,0)",
+    plot_bgcolor="rgba(0,0,0,0)",
+    colorway=PALETTE_GRAPHE,
+    
+    # Pour les axes, on sépare bien les propriétés de la ligne et de la police des graduations (tickfont)
+    xaxis=dict(
+        showgrid=True, 
+        gridcolor="#E8ECF0", 
+        linecolor="#E8ECF0", 
+        showline=False,
+        tickfont=dict(size=11) # Si vous voulez changer la taille des chiffres sur l'axe X
+    ),
+    yaxis=dict(
+        showgrid=True, 
+        gridcolor="#E8ECF0", 
+        linecolor="#E8ECF0", 
+        showline=False,
+        tickfont=dict(size=11) # Si vous voulez changer la taille des chiffres sur l'axe Y
+    ),
+    
+    legend=dict(
+        bgcolor="rgba(0,0,0,0)", 
+        font=dict(size=11)
+    ),
+    margin=dict(l=50, r=30, t=50, b=50),
     )
 )
 
@@ -686,8 +705,8 @@ def render_global():
             hovertemplate="<b>%{x}</b><br>Marge: %{y:,.0f} FCFA<extra></extra>",
         ))
         layout_ca = TEMPLATE_PLOTLY["layout"].copy()
-        layout_ca["yaxis"] = dict(title="Chiffre d'affaires (FCFA)", font=dict(color=COULEURS["primaire"]))
-        layout_ca["yaxis2"] = dict(title="Marge brute (FCFA)", font=dict(color=COULEURS["accent"]),
+        layout_ca["yaxis"] = dict(title=dict(text="Chiffre d'affaires (FCFA)", font=dict(color=COULEURS["primaire"])))
+        layout_ca["yaxis2"] = dict(title=dict(text="Marge brute (FCFA)", font=dict(color=COULEURS["accent"])),
                                    overlaying="y", side="right")
         fig_ca.update_layout(title_text="Évolution mensuelle du CA et Marge",
                              **layout_ca)
