@@ -1130,28 +1130,32 @@ def render_marketing():
                                xaxis_tickangle=-30, **layout_bvca)
 
 
-        # 1. Extraction manuelle forcée (on sort totalement du monde Pandas/Narwhals)
-        x_data = [float(x) for x in df_camp["nb_clics"].tolist()]
-        y_data = [float(y) for y in df_camp["nb_conversions"].tolist()]
-        names = [str(n) for n in df_camp["nom_campagne"].tolist()]
+        # 1. Extraction manuelle forcée et sécurisée
+        # On convertit tout en listes Python pures pour éviter les erreurs Narwhals/Series
+        x_data = [float(x) for x in df_camp["nb_clics"].tolist()] if not df_camp.empty else []
+        y_data = [float(y) for y in df_camp["nb_conversions"].tolist()] if not df_camp.empty else []
+        names = [str(n) for n in df_camp["nom_campagne"].tolist()] if not df_camp.empty else []
         
-        # Calcul des tailles des bulles avec sécurité si vide
-        raw_sizes = df_camp["chiffre_affaires_genere"].tolist()
-        clean_sizes = [max(5, float(v) / 1000) if v else 5 for v in raw_sizes]
+        # Calcul UNIQUE des tailles des bulles
+        clean_sizes = []
+        if not df_camp.empty:
+            raw_sizes = df_camp["chiffre_affaires_genere"].tolist()
+            for v in raw_sizes:
+                try:
+                    val = float(v)
+                    # On garde une taille min de 5 pour que les points soient visibles
+                    clean_sizes.append(max(5, val / 1000)) 
+                except:
+                    clean_sizes.append(5)
+        else:
+            clean_sizes = []
 
-        # Calcul de la référence de taille (sizeref) avec sécurité
-        # Si la liste est vide, on met une valeur par défaut (1)
-        max_size = max(clean_sizes) if clean_sizes else 1
-        size_ref = 2. * max_size / (40.**2)
-        
-        for v in raw_sizes:
-            try:
-                val = float(v)
-                clean_sizes.append(max(5, val / 1000)) # On réduit l'échelle pour l'affichage
-            except:
-                clean_sizes.append(5)
+        # Calcul de la référence de taille (sizeref) avec sécurité absolue
+        # On vérifie que la liste n'est pas vide avant de faire max()
+        max_val_size = max(clean_sizes) if clean_sizes else 1
+        size_ref = 2. * max_val_size / (40.**2)
 
-        # 2. Construction du graphique avec Graph Objects (plus stable que Express ici)
+        # 2. Construction du graphique avec Graph Objects
         fig_conv = go.Figure(data=[go.Scatter(
             x=x_data,
             y=y_data,
@@ -1161,11 +1165,11 @@ def render_marketing():
                 size=clean_sizes,
                 color=COULEURS["primaire"],
                 sizemode='area',
-                sizeref=2.*max(clean_sizes)/(40.**2), # Ajuste la taille des bulles
+                sizeref=size_ref, 
                 sizemin=4
             )
         )])
-
+        
         fig_conv.update_layout(
             title="Clics vs Conversions (taille = CA)",
             xaxis_title="Clics",
