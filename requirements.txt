@@ -6,3 +6,4 @@ dash-bootstrap-components
 sqlalchemy
 pymysql
 gunicorn
+cryptography
