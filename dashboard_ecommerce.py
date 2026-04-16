@@ -1128,11 +1128,18 @@ def render_marketing():
                                barmode="group",
                                xaxis_tickangle=-30, **layout_bvca)
 
-        # Taux de conversion (CORRIGÉ)
+        # Taux de conversion (Version Finale Sécurisée)
+        # 1. On s'assure que les données sont numériques et sans valeurs vides
+        sizes = pd.to_numeric(df_camp["chiffre_affaires_genere"], errors='coerce').fillna(0)
+        
+        # 2. On évite les tailles négatives ou trop petites pour l'affichage
+        sizes = sizes.apply(lambda x: x if x > 0 else 0).tolist()
+
         fig_conv = px.scatter(
-            df_camp, x="nb_clics", y="nb_conversions",
-            # On convertit explicitement en valeurs numériques pour éviter l'erreur Narwhals/Series
-            size=pd.to_numeric(df_camp["chiffre_affaires_genere"], errors='coerce').fillna(0).tolist(),
+            df_camp, 
+            x="nb_clics", 
+            y="nb_conversions",
+            size=sizes,  # On passe la liste nettoyée ici
             hover_name="nom_campagne",
             color_discrete_sequence=[COULEURS["primaire"]],
             title="Clics vs Conversions (taille = CA)",
