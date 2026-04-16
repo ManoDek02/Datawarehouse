@@ -12,8 +12,8 @@
 import dash
 from dash import dcc, html, Input, Output, callback, State
 import dash_bootstrap_components as dbc
-import plotly.express as px
 import plotly.graph_objects as go
+import plotly.express as px
 from plotly.subplots import make_subplots
 import pandas as pd
 from sqlalchemy import create_engine, text
@@ -1090,6 +1090,7 @@ def render_livraisons():
 
 def render_marketing():
     try:
+        import plotly.graph_objects as go
         df_camp = get_campagnes()
 
         # Ajouter la colonne manquante si elle n'existe pas
@@ -1128,8 +1129,6 @@ def render_marketing():
                                barmode="group",
                                xaxis_tickangle=-30, **layout_bvca)
 
-        # --- SOLUTION DE SECOURS RADICALE ---
-        import plotly.graph_objects as go
 
         # 1. Extraction manuelle forcée (on sort totalement du monde Pandas/Narwhals)
         x_data = [float(x) for x in df_camp["nb_clics"].tolist()]
