@@ -1138,22 +1138,28 @@ def render_marketing():
         # Nettoyage manuel strict pour l'onglet Marketing
         import numpy as np
 
-        # 1. On extrait les données brutes sous forme de liste Python simple
+        # Extraction manuelle ultra-sécurisée
         try:
-            # On convertit en float, on gère les erreurs, et on transforme en liste
-            raw_sizes = pd.to_numeric(df_camp["chiffre_affaires_genere"], errors='coerce').fillna(0).tolist()
-            # On s'assure qu'il n'y a aucune valeur négative (Plotly l'interdit pour 'size')
-            cleaned_sizes = [max(0, float(x)) for x in raw_sizes]
+            # On force la conversion en nombres et on crée une liste simple
+            # On utilise une boucle pour être sûr de casser tout objet Narwhals
+            brut = df_camp["chiffre_affaires_genere"]
+            tailles_nettoyees = []
+            
+            for valeur in brut:
+                try:
+                    num = float(valeur)
+                    tailles_nettoyees.append(max(0, num))
+                except:
+                    tailles_nettoyees.append(0)
         except:
-            # Sécurité si la colonne est totalement vide ou corrompue
-            cleaned_sizes = [0] * len(df_camp)
+            tailles_nettoyees = [0] * len(df_camp)
 
-        # 2. Création du graphique avec la liste nettoyée
+        # Création du graphique avec la liste Python basique
         fig_conv = px.scatter(
             df_camp, 
             x="nb_clics", 
             y="nb_conversions",
-            size=cleaned_sizes,  # On passe la liste Python pure
+            size=tailles_nettoyees, # On utilise la liste d'entiers/floats
             hover_name="nom_campagne",
             color_discrete_sequence=[COULEURS["primaire"]],
             title="Clics vs Conversions (taille = CA)",
