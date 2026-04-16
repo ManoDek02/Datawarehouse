@@ -23,6 +23,12 @@ import sys
 
 import os # N'oublie pas d'ajouter cet import en haut du fichier
 
+
+def query(sql, params=None):
+    engine = get_engine()
+    with engine.connect() as conn:
+        return pd.read_sql(text(sql), conn, params=params)
+
 # ============================================================
 # CONFIGURATION DE LA BASE DE DONNÉES
 # ============================================================
