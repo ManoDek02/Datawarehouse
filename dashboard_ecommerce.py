@@ -21,44 +21,38 @@ from urllib.parse import quote_plus
 import numpy as np
 import sys
 
+import os # N'oublie pas d'ajouter cet import en haut du fichier
+
 # ============================================================
 # CONFIGURATION DE LA BASE DE DONNÉES
 # ============================================================
-DB_CONFIG = {
-    "host": "localhost",
-    "port": 3306,
-    "user": "root",        # Changer selon votre config
-    "password": "Mano@2005",        # Changer selon votre config
-    "database": "ecommerce_source",
-}
 
 def get_engine():
-    # Encoder les credentials pour éviter les problèmes avec les caractères spéciaux comme @
+    # 1. On vérifie d'abord si Render nous a donné une URL (DATABASE_URL)
+    env_url = os.getenv('DATABASE_URL')
+    
+    if env_url:
+        # Si on est sur Render, on utilise l'URL d'Aiven directement
+        return create_engine(env_url)
+    
+    # 2. Sinon, on utilise ta configuration locale (sur ton EliteBook)
+    DB_CONFIG = {
+        "host": "localhost",
+        "port": 3306,
+        "user": "root",
+        "password": "Mano@2005",
+        "database": "ecommerce_source",
+    }
+    
     user_encoded = quote_plus(DB_CONFIG['user'])
     password_encoded = quote_plus(DB_CONFIG['password'])
+    
     url = (
         f"mysql+pymysql://{user_encoded}:{password_encoded}"
         f"@{DB_CONFIG['host']}:{DB_CONFIG['port']}/{DB_CONFIG['database']}"
         f"?charset=utf8mb4"
     )
     return create_engine(url)
-
-
-def query(sql, params=None):
-    engine = get_engine()
-    with engine.connect() as conn:
-        return pd.read_sql(text(sql), conn, params=params)
-
-
-def clean_dataframe(df, *columns):
-    """Nettoie les colonnes en remplaçant NaN/None par 'Non défini'"""
-    for col in columns:
-        if col in df.columns:
-            df[col] = df[col].fillna("Non défini")
-            df[col] = df[col].replace([np.nan, None, ""], "Non défini")
-            df[col] = df[col].astype(str)
-    return df
-
 
 # ============================================================
 # REQUÊTES DE DONNÉES
