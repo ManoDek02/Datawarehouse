@@ -28,6 +28,16 @@ def query(sql, params=None):
     engine = get_engine()
     with engine.connect() as conn:
         return pd.read_sql(text(sql), conn, params=params)
+    
+
+def clean_dataframe(df, *columns):
+    """Nettoie les colonnes en remplaçant NaN/None par 'Non défini'"""
+    for col in columns:
+        if col in df.columns:
+            df[col] = df[col].fillna("Non défini")
+            df[col] = df[col].replace([np.nan, None, ""], "Non défini")
+            df[col] = df[col].astype(str)
+    return df
 
 # ============================================================
 # CONFIGURATION DE LA BASE DE DONNÉES
