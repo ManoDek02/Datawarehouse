@@ -686,8 +686,8 @@ def render_global():
             hovertemplate="<b>%{x}</b><br>Marge: %{y:,.0f} FCFA<extra></extra>",
         ))
         layout_ca = TEMPLATE_PLOTLY["layout"].copy()
-        layout_ca["yaxis"] = dict(title="Chiffre d'affaires (FCFA)", title=dict(font=dict(color=COULEURS["primaire"])))
-        layout_ca["yaxis2"] = dict(title="Marge brute (FCFA)", title=dict(font=dict(color=COULEURS["accent"])),
+        layout_ca["yaxis"] = dict(title="Chiffre d'affaires (FCFA)", font=dict(color=COULEURS["primaire"]))
+        layout_ca["yaxis2"] = dict(title="Marge brute (FCFA)", font=dict(color=COULEURS["accent"]),
                                    overlaying="y", side="right")
         fig_ca.update_layout(title_text="Évolution mensuelle du CA et Marge",
                              **layout_ca)
