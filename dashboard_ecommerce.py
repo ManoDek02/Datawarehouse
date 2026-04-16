@@ -1131,22 +1131,22 @@ def render_marketing():
         # Force la conversion en nombres et extraction hors de l'objet Narwhals
         import numpy as np
         
-        # On récupère les valeurs brutes et on les transforme en liste de nombres standards
+        # Force l'extraction des données en liste Python pure
         try:
-            # .to_numpy() est souvent le moyen le plus direct de casser une structure Series
-            valeurs_ca = pd.to_numeric(df_camp["chiffre_affaires_genere"], errors='coerce').fillna(0).to_numpy()
-            # On s'assure que tout est positif (obligatoire pour le paramètre 'size')
-            tailles_finales = np.maximum(0, valeurs_ca).tolist()
-        except:
-            # En cas d'échec total, on met une taille par défaut de 10 pour tous les points
+            # On convertit en float, on gère les erreurs, et on force en LISTE simple
+            # On utilise list() sur les valeurs pour garantir qu'aucun objet Series ne reste
+            raw_values = pd.to_numeric(df_camp["chiffre_affaires_genere"], errors='coerce').fillna(0).values
+            tailles_finales = [max(0.1, float(v)) for v in raw_values]
+        except Exception:
+            # Sécurité : tailles uniformes si la colonne pose problème
             tailles_finales = [10] * len(df_camp)
 
-        # Création du graphique avec la liste Python 'pure'
+        # Création du graphique avec la liste nettoyée
         fig_conv = px.scatter(
             df_camp, 
             x="nb_clics", 
             y="nb_conversions",
-            size=tailles_finales, # On passe la liste de nombres ici
+            size=tailles_finales, # On passe la liste Python pure ici
             hover_name="nom_campagne",
             color_discrete_sequence=[COULEURS["primaire"]],
             title="Clics vs Conversions (taille = CA)",
